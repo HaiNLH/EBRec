@@ -119,7 +119,7 @@ def main():
 
         # 加载之前的参数
         if conf["dataset"]== "Youshu":
-            state_dict_load = torch.load("EBRec\savamodel\youshu\GCBRmodel")
+            state_dict_load =torch.load(os.path.abspath(os.getcwd()) + "/savamodel/youshu/GCBRmodel")
             model.load_state_dict(state_dict_load )
 
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=conf["l2_reg"])
@@ -273,9 +273,9 @@ def test(model, dataloader, conf):
 def get_metrics(metrics, grd, pred, topks):
     tmp = {"recall": {}, "ndcg": {}}
     for topk in topks:
-        _, col_indice = torch.topk(pred, topk)
+        _, col_indice = torch.topk(pred, topk).to(pred.device)
         row_indice = torch.zeros_like(col_indice) + torch.arange(pred.shape[0], device=pred.device, dtype=torch.long).view(-1, 1)
-        is_hit = grd[row_indice.view(-1), col_indice.view(-1)].view(-1, topk)
+        is_hit = grd[row_indice.view(-1), col_indice.view(-1)].to(pred.device).view(-1, topk)
 
         tmp["recall"][topk] = get_recall(pred, grd, is_hit, topk)
         tmp["ndcg"][topk] = get_ndcg(pred, grd, is_hit, topk)
